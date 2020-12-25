@@ -3,13 +3,19 @@ Markdown Custom class extension for Python-Markdown
 =========================================
 
     >>> import markdown
-    >>> md = markdown.Markdown(extensions=['a_markdown_simple'])
-    >>> md.convert('i love!!red|spam!!')
-    u'<p>i love<span class="red">spam</span></p>'
+    >>> md = markdown.Markdown(extensions=['a_markdown_details'])
+
+    >>> md.convert('{{##summary_title}}aaa')
+    u'<p><summary class="h2 aaa">summary_title</summary></p>'
+
+    >>> md.convert('{{##summary_title}}')
+    u'<p><summary class="h2 ">summary_title</summary></p>'
+
+    >>> md.convert('{{summary_title}}aaa')
+    u'<p><summary class="aaa">summary_title</summary></p>'
 
     >>> md.convert('{{summary_title}}')
-    u'<p><summary>summary_title</summary></p>'
-
+    u'<p><summary class="">summary_title</summary></p>'
 
 """
 from __future__ import absolute_import
@@ -21,26 +27,22 @@ from markdown.blockprocessors import BlockProcessor
 import re
 import xml.etree.ElementTree as etree
 
-
-
-#!!red|str!! >> <span class="red">spam</span>'
-SPAN_CLASS = r'[!]{2}(?P<class>.+?)[|](?P<text>.+?)[!]{2}'
-
-#{{summary}} >> <summary>summary_title</summary>
-SUMMARY = r'[{]{2}(?P<title>.+?)[}]{2}'
-
 #--div--
 
 #detail
-RE_FENCE_START = r'^{{3}\n'
-RE_FENCE_END = r'}{3}'
+RE_FENCE_START = r'^[{]{3}$'
+RE_FENCE_END = r'^[}]{3}$'
+# RE_FENCE_START = r'^{{3}\n'
+# RE_FENCE_END = r'}{3}'
+
+
+
+#{{summary}} >> <summary>summary_title</summary>
+SUMMARY = r'^[{]{2}(?P<class>#*)(?P<title>.+?)[}]{2}(?P<class_option>.*)$'
+#SUMMARY = r'^[{]{2}(?P<title>.+?)[}]{2}(?P<class>.*)$'
 
 class MyExtension(Extension):
     def extendMarkdown(self, md, md_globals):
-
-        #span_class
-        span_class=SpanClassPattern(SPAN_CLASS, md)
-        md.inlinePatterns['custom_span_class'] = span_class
 
         #summary
         summary=SummaryPattern(SUMMARY, md)
@@ -49,22 +51,22 @@ class MyExtension(Extension):
         #detail
         md.parser.blockprocessors.register(DetailBlock(md.parser),'box',175)
 
-class SpanClassPattern(Pattern):
-    def handleMatch(self, matched):
-
-        cls = matched.group("class")
-        text = matched.group("text")
-
-        line = markdown.util.etree.Element("span")
-        line.set("class", cls)
-        line.text = markdown.util.AtomicString(text)
-        return line
 
 class SummaryPattern(Pattern):
     def handleMatch(self, matched):
 
         text = matched.group("title")
+        cls = matched.group("class")
+        cls_option = matched.group("class_option")
         line = markdown.util.etree.Element("summary")
+
+        if cls != "" :
+            count = len(cls)
+            cls_str="h" + str(count) + " "+cls_option
+        else :
+            cls_str=cls_option
+        
+        line.set("class", cls_str )
         line.text = markdown.util.AtomicString(text)
         return line
 
