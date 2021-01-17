@@ -14,7 +14,7 @@ RE_FENCE_START = r'^{{3}(?P<class>#*)(?P<title>.*)'
 RE_FENCE_END = r'}{3}'
 
 class MyExtension(Extension):
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md ):
 
         #detail&summary
         md.parser.blockprocessors.register(DetailBlock(md.parser),'box',175)
