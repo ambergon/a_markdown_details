@@ -1,6 +1,4 @@
 # coding:utf-8
-from __future__ import absolute_import
-from __future__ import unicode_literals
 import markdown
 from markdown import Extension
 from markdown.inlinepatterns import Pattern
