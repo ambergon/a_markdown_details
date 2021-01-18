@@ -14,7 +14,7 @@ RE_FENCE_START = r'^{{3}(?P<class>#*)(?P<title>.*)'
 RE_FENCE_END = r'}{3}'
 
 class MyExtension(Extension):
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, md ):
 
         #detail&summary
         md.parser.blockprocessors.register(DetailBlock(md.parser),'box',175)
@@ -65,11 +65,12 @@ class TextClass(unittest.TestCase):
         md = markdown.Markdown(extensions=['a_markdown_details'])
 
        #日本語を単独で使えるようにしたい 
+       #デコードする必要があるようだ
         text = '''{{{##title
 hoge
 hoge1
 }}}'''
-        print md.convert(text)
+        print(md.convert(text))
 
 if __name__ == "__main__":
     unittest.main()
